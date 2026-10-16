@@ -242,6 +242,7 @@ section{padding-block:110px;position:relative}
 .cta p{max-width:30em;margin:0 auto 30px;color:#e2cfc6}
 footer{background:var(--cocoa);color:#cdb6ab;border-top:1px solid rgba(255,247,239,.12);padding-block:26px calc(26px + env(safe-area-inset-bottom,0px));font-size:.9rem}
 .foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+@media (max-width:600px){footer{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}}
 
 .wa{position:fixed;z-index:60;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 14px 30px -8px rgba(37,211,102,.6);transition:transform .3s var(--ease),opacity .3s}
 .wa:hover{transform:scale(1.08)}
