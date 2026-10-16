@@ -490,14 +490,17 @@ track.innerHTML=ITEMS.map((it,i)=>`<div class="slide${i?'':' active'}" role="gro
 dotsEl.innerHTML=ITEMS.map((it,i)=>`<button type="button" role="tab" aria-label="${it[0]}" aria-current="${i===0}"></button>`).join('');
 const slides=[...track.children],dots=[...dotsEl.children];
 let active=0;
-function pad(){return parseFloat(getComputedStyle(track).scrollPaddingLeft)||0}
-function goTo(i,smooth=true){i=clamp(i,0,slides.length-1);const left=slides[i].offsetLeft-pad();track.scrollTo({left,behavior:smooth&&!reduce?'smooth':'auto'})}
-function syncActive(){const p=pad(),sl=track.scrollLeft;let best=0,bd=Infinity;
-  for(let i=0;i<slides.length;i++){const d=Math.abs(slides[i].offsetLeft-p-sl);if(d<bd){bd=d;best=i}}
+let lockUntil=0;
+function setActive(i){if(i===active)return;slides[active].classList.remove('active');dots[active].setAttribute('aria-current','false');active=i;slides[active].classList.add('active');dots[active].setAttribute('aria-current','true')}
+function goTo(i,smooth=true){i=clamp(i,0,slides.length-1);const max=track.scrollWidth-track.clientWidth;const left=Math.min(max,slides[i].offsetLeft-slides[0].offsetLeft);setActive(i);lockUntil=performance.now()+(smooth?800:50);prevB.disabled=left<=4;nextB.disabled=left>=max-4;track.scrollTo({left,behavior:smooth&&!reduce?'smooth':'auto'})}
+function syncActive(force){if(!force&&performance.now()<lockUntil)return;const o=slides[0].offsetLeft,sl=track.scrollLeft;let best=0,bd=Infinity;
+  for(let i=0;i<slides.length;i++){const d=Math.abs(slides[i].offsetLeft-o-sl);if(d<bd){bd=d;best=i}}
   const max=track.scrollWidth-track.clientWidth;if(sl>=max-4)best=slides.length-1;
-  if(best!==active){slides[active].classList.remove('active');dots[active].setAttribute('aria-current','false');active=best;slides[active].classList.add('active');dots[active].setAttribute('aria-current','true')}
+  setActive(best);
   prevB.disabled=sl<=4;nextB.disabled=sl>=max-4}
 let sTick=false;track.addEventListener('scroll',()=>{if(!sTick){sTick=true;requestAnimationFrame(()=>{syncActive();sTick=false})}},{passive:true});
+track.addEventListener('scrollend',()=>{lockUntil=0;syncActive(true)});
+['pointerdown','touchstart','wheel'].forEach(ev=>track.addEventListener(ev,()=>{lockUntil=0},{passive:true}));
 prevB.addEventListener('click',()=>{goTo(active-1);bump()});
 nextB.addEventListener('click',()=>{goTo(active+1);bump()});
 dots.forEach((d,i)=>d.addEventListener('click',()=>{goTo(i);bump()}));
